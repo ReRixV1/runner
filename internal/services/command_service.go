@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"runner/internal/models"
 )
 
 func ExecCommand(commands ...string) {
@@ -27,6 +28,12 @@ func ExecCommandInBackground(commands ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
+	WriteActivity(models.BackgroundActivity{
+		Command:   commands[0],
+		Pid:       cmd.Process.Pid,
+		Arguments: commands[1:],
+	})
 
 	return nil
 }

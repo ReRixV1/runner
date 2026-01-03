@@ -1,8 +1,7 @@
 package models
 
-import "bytes"
-
 type BackgroundActivity struct {
-	cmdStr  string
-	outputb *bytes.Buffer
+	Command   string   `json:"command"`
+	Pid       int      `json:"pid"`
+	Arguments []string `json:"arguments"`
 }
