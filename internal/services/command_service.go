@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"runner/internal/models"
+	"syscall"
 )
 
 func ExecCommand(commands ...string) {
@@ -24,6 +25,10 @@ func ExecCommandInBackground(commands ...string) (*models.BackgroundActivity, er
 	cmd := exec.Command(commands[0], commands[1:]...)
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
 
 	if err := cmd.Start(); err != nil {
 		return nil, err
