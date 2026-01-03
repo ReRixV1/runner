@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"runner/internal/services"
+	"strconv"
 
 	"github.com/urfave/cli/v3"
 )
@@ -22,7 +23,7 @@ func main() {
 		Commands: []*cli.Command{
 			&cli.Command{
 				Name:            "run",
-				Aliases:         []string{"r"},
+				Aliases:         []string{"r", "start"},
 				Usage:           "Run command in the background",
 				SkipFlagParsing: true,
 				Action: func(ctx context.Context, cmd *cli.Command) error {
@@ -30,24 +31,55 @@ func main() {
 						fmt.Println("Must provide command!")
 						return nil
 					}
-					err := services.ExecCommandInBackground(cmd.Args().Slice()...)
+					activity, err := services.ExecCommandInBackground(cmd.Args().Slice()...)
 					if err != nil {
 						fmt.Println("Error while executing command")
 						return nil
 					}
+
+					fmt.Printf("Started %s (pid %d) in the background!\n", activity.Command, activity.Pid)
+
 					return nil
 				},
 			},
 			&cli.Command{
 				Name:    "list",
 				Aliases: []string{"l", "ls"},
-				Usage:   "Lists all running backgrund activites (commands)",
+				Usage:   "Lists all running backgrund activities (commands)",
 				Action: func(ctx context.Context, c *cli.Command) error {
 					err := services.ListActivites()
 					if err != nil {
 						fmt.Println("Error listing activities (internal error)")
 						return nil
 					}
+					return nil
+				},
+			},
+			&cli.Command{
+				Name:    "stop",
+				Aliases: []string{"end", "kill", "s"},
+				Usage:   "Stops an activity",
+				Action: func(ctx context.Context, c *cli.Command) error {
+					services.DeleteStoppedActivites()
+
+					if c.Args().Len() < 1 {
+						fmt.Println("Please enter a valid pid!")
+						return nil
+					}
+
+					pid, err := strconv.Atoi(c.Args().First())
+					if err != nil {
+						fmt.Println("Please enter a valid pid!")
+						return nil
+					}
+					err = services.StopActivity(pid)
+
+					if err != nil {
+						fmt.Println("pid not found!")
+						return nil
+					}
+
+					fmt.Println("Stopped process " + strconv.Itoa(pid))
 					return nil
 				},
 			},

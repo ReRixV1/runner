@@ -19,21 +19,23 @@ func ExecCommand(commands ...string) {
 
 	fmt.Println(string(stdout))
 }
-func ExecCommandInBackground(commands ...string) error {
+func ExecCommandInBackground(commands ...string) (*models.BackgroundActivity, error) {
 	var outb, errb bytes.Buffer
 	cmd := exec.Command(commands[0], commands[1:]...)
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 
 	if err := cmd.Start(); err != nil {
-		return err
+		return nil, err
 	}
 
-	WriteActivity(models.BackgroundActivity{
+	activity := &models.BackgroundActivity{
 		Command:   commands[0],
 		Pid:       cmd.Process.Pid,
 		Arguments: commands[1:],
-	})
+	}
 
-	return nil
+	WriteActivity(*activity)
+
+	return activity, nil
 }

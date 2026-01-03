@@ -2,7 +2,9 @@ package services
 
 import (
 	"fmt"
+	"os"
 	"runner/internal/models"
+	"syscall"
 )
 
 func getRunningActivities() ([]models.BackgroundActivity, error) {
@@ -25,8 +27,23 @@ func getRunningActivities() ([]models.BackgroundActivity, error) {
 
 }
 
+func StopActivity(pid int) error {
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return err
+	} else {
+		if err := process.Signal(syscall.Signal(0)); err != nil {
+			return err
+		}
+	}
+
+	process.Kill()
+
+	return nil
+}
+
 func ListActivites() error {
-	err := deleteStoppedActivites()
+	err := DeleteStoppedActivites()
 	if err != nil {
 		fmt.Println("Error removing already stopped activities (internal error)")
 		return err

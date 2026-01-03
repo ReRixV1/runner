@@ -18,7 +18,7 @@ func getTempDirPath() string {
 
 func EnsureTempDirectory() error {
 	tempDir := getTempDirPath()
-	fmt.Println("TempDir: " + tempDir)
+	//fmt.Println("TempDir: " + tempDir)
 	err := os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		fmt.Println("Error ensuring temp directory (internal error)")
@@ -80,7 +80,7 @@ func removeActivity(path string) error {
 	return nil
 }
 
-func deleteStoppedActivites() error {
+func DeleteStoppedActivites() error {
 	activities, err := getRunningActivities()
 	if err != nil {
 		return err
