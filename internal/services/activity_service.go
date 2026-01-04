@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runner/internal/models"
+	"strings"
 	"syscall"
 )
 
@@ -38,6 +39,56 @@ func StopActivity(pid int) error {
 	}
 
 	process.Kill()
+
+	return nil
+}
+
+func StopActivityWithName(name string, all bool) error {
+	activities, err := getRunningActivities()
+
+	if err != nil {
+		fmt.Println("Error getting running background activities (internal error)")
+		return err
+	}
+
+	// check if process name exists more than once
+	count := 0
+	var cmd *models.BackgroundActivity
+	for _, a := range activities {
+		if strings.ToLower(a.Command) == name {
+			count += 1
+			cmd = &a
+
+			if all {
+				pid := cmd.Pid
+
+				if err := StopActivity(pid); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	if all {
+		return nil
+	}
+
+	if cmd == nil {
+		fmt.Printf("Process \"%s\" not found!\n", name)
+		return nil
+	}
+
+	if count > 1 && !all {
+		fmt.Printf("Process with same name (%s) exists more than once!\n", name)
+		fmt.Println("Please use the --pid to stop a specific process or --all to quick all processes matching the name!")
+		return nil
+	}
+
+	pid := cmd.Pid
+
+	if err := StopActivity(pid); err != nil {
+		return err
+	}
 
 	return nil
 }

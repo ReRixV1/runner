@@ -7,6 +7,7 @@ import (
 	"os"
 	"runner/internal/services"
 	"strconv"
+	"strings"
 
 	"github.com/urfave/cli/v3"
 )
@@ -17,9 +18,10 @@ func main() {
 	}
 
 	cmd := &cli.Command{
-		Name:    "runner",
-		Usage:   "Manage commands that run in the background",
-		Version: "v0.1",
+		Name:                  "runner",
+		Usage:                 "Manage commands that run in the background",
+		Version:               "v0.1",
+		EnableShellCompletion: true,
 		Commands: []*cli.Command{
 			&cli.Command{
 				Name:            "run",
@@ -28,7 +30,7 @@ func main() {
 				SkipFlagParsing: true,
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					if cmd.Args().Len() < 1 {
-						fmt.Println("Must provide command!")
+						fmt.Println("Must provide a command!")
 						return nil
 					}
 					activity, err := services.ExecCommandInBackground(cmd.Args().Slice()...)
@@ -59,6 +61,18 @@ func main() {
 				Name:    "stop",
 				Aliases: []string{"end", "kill", "s"},
 				Usage:   "Stops an activity",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "pid",
+						Usage:   "stop process using its pid",
+						Aliases: []string{"p"},
+					},
+					&cli.BoolFlag{
+						Name:    "all",
+						Usage:   "stop all process matching the specified name",
+						Aliases: []string{"a"},
+					},
+				},
 				Action: func(ctx context.Context, c *cli.Command) error {
 					services.DeleteStoppedActivites()
 
@@ -67,20 +81,34 @@ func main() {
 						return nil
 					}
 
-					pid, err := strconv.Atoi(c.Args().First())
-					if err != nil {
-						fmt.Println("Please enter a valid pid!")
+					if c.Bool("pid") == true {
+						pid, err := strconv.Atoi(c.Args().First())
+						if err != nil {
+							fmt.Println("Please enter a valid pid!")
+							return nil
+						}
+						err = services.StopActivity(pid)
+
+						if err != nil {
+							fmt.Println("pid not found!")
+							return nil
+						}
+
+						fmt.Println("Stopped process " + strconv.Itoa(pid))
 						return nil
 					}
-					err = services.StopActivity(pid)
+
+					name := strings.ToLower(c.Args().First())
+					err := services.StopActivityWithName(name, c.Bool("all"))
 
 					if err != nil {
-						fmt.Println("pid not found!")
+						fmt.Println("Error while trying to stop process!")
 						return nil
 					}
 
-					fmt.Println("Stopped process " + strconv.Itoa(pid))
+					fmt.Println("Stopped process: " + name)
 					return nil
+
 				},
 			},
 		},
