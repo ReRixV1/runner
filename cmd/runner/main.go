@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"runner/internal/services"
 	"strconv"
 	"strings"
@@ -57,6 +58,63 @@ func main() {
 					return nil
 				},
 			},
+			&cli.Command{
+				Name:    "view",
+				Aliases: []string{"v"},
+				Usage:   "View live output of process (experimental)",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "pid",
+						Usage:   "view process using its pid",
+						Aliases: []string{"p"},
+					},
+				},
+				Action: func(ctx context.Context, c *cli.Command) error {
+					tmpDir := services.GetTempDirPath()
+					var pid int
+					if c.Bool("pid") {
+						p, err := strconv.Atoi(c.Args().First())
+						pid = p
+						if err != nil {
+							fmt.Println("Please enter a valid pid!")
+							return nil
+						}
+					}
+
+					pids, _ := services.GetPids(c.Args().First())
+
+					if len(pids) > 1 {
+						fmt.Printf("More than one process found with name \"%s\"\n", c.Args().First())
+						return nil
+					}
+
+					if !c.Bool("pid") && len(pids) == 0 {
+						fmt.Printf("Process \"%s\" not found!\n", c.Args().First())
+						return nil
+					}
+
+					if !c.Bool("pid") {
+						pid = *pids[0]
+					}
+
+					fmt.Println("PID: " + strconv.Itoa(pid))
+
+					path := filepath.Join(tmpDir, strconv.Itoa(pid)+".json")
+					a, err := services.GetActivity(path)
+					if err != nil {
+						fmt.Println("pid not found!")
+						return nil
+					}
+
+					logFile := a.LogFile
+					logFilePath := filepath.Join(tmpDir, logFile)
+
+					services.ReadLogFile(logFilePath)
+
+					return nil
+				},
+			},
+
 			&cli.Command{
 				Name:    "stop",
 				Aliases: []string{"end", "kill", "s"},

@@ -20,7 +20,7 @@ func getRunningActivities() ([]models.BackgroundActivity, error) {
 		if !strings.HasSuffix(p, ".json") {
 			continue
 		}
-		activity, err := readActivity(p)
+		activity, err := GetActivity(p)
 		if err != nil {
 			fmt.Println("Error reading activity temp file (internal error)")
 		}
@@ -47,48 +47,48 @@ func StopActivity(pid int) error {
 	return nil
 }
 
-func StopActivityWithName(name string, all bool) error {
+func GetPids(name string) ([]*int, error) {
 	activities, err := getRunningActivities()
 
 	if err != nil {
 		fmt.Println("Error getting running background activities (internal error)")
-		return err
+		return nil, err
 	}
 
-	// check if process name exists more than once
-	count := 0
-	var cmd *models.BackgroundActivity
+	var pids []*int
 	for _, a := range activities {
 		if strings.ToLower(a.Command) == name {
-			count += 1
-			cmd = &a
-
-			if all {
-				pid := cmd.Pid
-
-				if err := StopActivity(pid); err != nil {
-					return err
-				}
-			}
+			pids = append(pids, &a.Pid)
 		}
 	}
 
+	return pids, nil
+}
+
+func StopActivityWithName(name string, all bool) error {
+	pids, _ := GetPids(name)
+
 	if all {
+		for _, p := range pids {
+			if err := StopActivity(*p); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 
-	if cmd == nil {
-		fmt.Printf("Process \"%s\" not found!\n", name)
+	if len(pids) == 0 {
+		fmt.Printf("Process \"%s\" not found\n", name)
 		return errors.New("not found")
 	}
 
-	if count > 1 && !all {
+	if len(pids) > 1 && !all {
 		fmt.Printf("Process with same name (%s) exists more than once!\n", name)
 		fmt.Println("Please use the --pid to stop a specific process or --all to quick all processes matching the name!")
 		return nil
 	}
 
-	pid := cmd.Pid
+	pid := *pids[0]
 
 	if err := StopActivity(pid); err != nil {
 		return err

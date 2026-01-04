@@ -94,7 +94,7 @@ func WriteActivity(activity models.BackgroundActivity) error {
 	return nil
 }
 
-func readActivity(path string) (*models.BackgroundActivity, error) {
+func GetActivity(path string) (*models.BackgroundActivity, error) {
 	f, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
