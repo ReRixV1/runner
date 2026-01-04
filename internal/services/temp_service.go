@@ -117,6 +117,7 @@ func removeFile(path string) error {
 func DeleteStoppedActivites() error {
 	activities, err := getRunningActivities()
 	if err != nil {
+		fmt.Println("Error removing already stopped activities (internal error)")
 		return err
 	}
 

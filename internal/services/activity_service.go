@@ -48,6 +48,10 @@ func StopActivity(pid int) error {
 }
 
 func GetPids(name string) ([]*int, error) {
+	err := DeleteStoppedActivites()
+	if err != nil {
+		return nil, err
+	}
 	activities, err := getRunningActivities()
 
 	if err != nil {
@@ -100,7 +104,6 @@ func StopActivityWithName(name string, all bool) error {
 func ListActivites() error {
 	err := DeleteStoppedActivites()
 	if err != nil {
-		fmt.Println("Error removing already stopped activities (internal error)")
 		return err
 	}
 
