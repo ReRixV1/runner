@@ -33,7 +33,7 @@ func main() {
 						fmt.Println("Must provide a command!")
 						return nil
 					}
-					activity, err := services.ExecCommandInBackground(cmd.Args().Slice()...)
+					activity, err := services.StartProcessInBackground(cmd.Args().Slice()...)
 					if err != nil {
 						fmt.Println("Error while executing command")
 						return nil
