@@ -10,14 +10,14 @@ import (
 	"syscall"
 )
 
-func getTempDirPath() string {
+func GetTempDirPath() string {
 	osTempDir := os.TempDir()
 	tempDir := filepath.Join(osTempDir, "net.rerix.runner")
 	return tempDir
 }
 
 func EnsureTempDirectory() error {
-	tempDir := getTempDirPath()
+	tempDir := GetTempDirPath()
 	//fmt.Println("TempDir: " + tempDir)
 	err := os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
@@ -27,8 +27,42 @@ func EnsureTempDirectory() error {
 	return nil
 }
 
+func getLogFileName(processName string, suffix int) string {
+	tmpDir := GetTempDirPath()
+
+	name := processName
+	if suffix != 0 {
+		name += "-" + strconv.Itoa(suffix)
+	}
+	name += ".log"
+	if _, err := os.Stat(filepath.Join(tmpDir, name)); err == nil {
+		return getLogFileName(processName, suffix+1)
+	}
+
+	return name
+}
+
+func createAndOpenLogFile(name string) (*os.File, error) {
+	tempDir := GetTempDirPath()
+	path := filepath.Join(tempDir, name)
+	return os.OpenFile(
+		path,
+		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
+		0644,
+	)
+	//_, err := os.Create(path)
+
+	//if err != nil {
+	//	fmt.Println("Error trying to create temp log file (internal error)")
+	//	return nil, nil
+	//}
+
+	//return os.Open(path)
+
+}
+
 func readTempDir() ([]string, error) {
-	tempDir := getTempDirPath()
+	tempDir := GetTempDirPath()
 	entries, err := os.ReadDir(tempDir)
 	if err != nil {
 		fmt.Println("Error reading temp directory (internal error)")
@@ -44,7 +78,7 @@ func readTempDir() ([]string, error) {
 }
 
 func WriteActivity(activity models.BackgroundActivity) error {
-	tempDir := getTempDirPath()
+	tempDir := GetTempDirPath()
 
 	data, err := json.Marshal(activity)
 	if err != nil {
@@ -72,7 +106,7 @@ func readActivity(path string) (*models.BackgroundActivity, error) {
 	return activity, err
 }
 
-func removeActivity(path string) error {
+func removeFile(path string) error {
 	err := os.Remove(path)
 	if err != nil {
 		return err
@@ -86,7 +120,7 @@ func DeleteStoppedActivites() error {
 		return err
 	}
 
-	tempDir := getTempDirPath()
+	tempDir := GetTempDirPath()
 
 	for _, a := range activities {
 		pid := a.Pid
@@ -94,15 +128,11 @@ func DeleteStoppedActivites() error {
 
 		if err != nil {
 			path := filepath.Join(tempDir, strconv.Itoa(pid)+".json")
-			if err = removeActivity(path); err != nil {
-				return err
-			}
+			stopProcess(path)
 		} else {
 			if err := process.Signal(syscall.Signal(0)); err != nil {
 				path := filepath.Join(tempDir, strconv.Itoa(pid)+".json")
-				if err = removeActivity(path); err != nil {
-					return err
-				}
+				stopProcess(path)
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runner/internal/models"
@@ -11,11 +12,14 @@ import (
 func getRunningActivities() ([]models.BackgroundActivity, error) {
 	paths, err := readTempDir()
 	if err != nil {
-		fmt.Println("Error reading activity temp file (internal error)")
+		fmt.Println("Error getting temp files (internal error)")
 		return nil, err
 	}
 	var activities []models.BackgroundActivity
 	for _, p := range paths {
+		if !strings.HasSuffix(p, ".json") {
+			continue
+		}
 		activity, err := readActivity(p)
 		if err != nil {
 			fmt.Println("Error reading activity temp file (internal error)")
@@ -75,7 +79,7 @@ func StopActivityWithName(name string, all bool) error {
 
 	if cmd == nil {
 		fmt.Printf("Process \"%s\" not found!\n", name)
-		return nil
+		return errors.New("not found")
 	}
 
 	if count > 1 && !all {

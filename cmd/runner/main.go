@@ -102,6 +102,9 @@ func main() {
 					err := services.StopActivityWithName(name, c.Bool("all"))
 
 					if err != nil {
+						if err.Error() == "not found" {
+							return nil
+						}
 						fmt.Println("Error while trying to stop process!")
 						return nil
 					}
@@ -109,6 +112,14 @@ func main() {
 					fmt.Println("Stopped process: " + name)
 					return nil
 
+				},
+			},
+			&cli.Command{
+				Name:  "temp",
+				Usage: "prints temp directory path (for development :D)",
+				Action: func(ctx context.Context, c *cli.Command) error {
+					fmt.Println(services.GetTempDirPath())
+					return nil
 				},
 			},
 		},
