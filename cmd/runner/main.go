@@ -60,7 +60,7 @@ func main() {
 			},
 			&cli.Command{
 				Name:    "view",
-				Aliases: []string{"v"},
+				Aliases: []string{"v", "show", "log"},
 				Usage:   "View live output of process (experimental)",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
@@ -97,8 +97,6 @@ func main() {
 						pid = *pids[0]
 					}
 
-					fmt.Println("PID: " + strconv.Itoa(pid))
-
 					path := filepath.Join(tmpDir, strconv.Itoa(pid)+".json")
 					a, err := services.GetActivity(path)
 					if err != nil {
@@ -109,7 +107,7 @@ func main() {
 					logFile := a.LogFile
 					logFilePath := filepath.Join(tmpDir, logFile)
 
-					services.ReadLogFile(logFilePath)
+					services.ReadLogFileTail(logFilePath)
 
 					return nil
 				},
