@@ -60,7 +60,7 @@ func main() {
 			},
 			&cli.Command{
 				Name:    "view",
-				Aliases: []string{"v", "show", "log"},
+				Aliases: []string{"v", "show"},
 				Usage:   "View live output of process (experimental)",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
@@ -72,6 +72,10 @@ func main() {
 				Action: func(ctx context.Context, c *cli.Command) error {
 					tmpDir := services.GetTempDirPath()
 					var pid int
+					if c.Args().Len() == 0 {
+						fmt.Println("Please enter a process name or a PID using --pid")
+						return nil
+					}
 					if c.Bool("pid") {
 						p, err := strconv.Atoi(c.Args().First())
 						pid = p
@@ -89,7 +93,7 @@ func main() {
 					}
 
 					if !c.Bool("pid") && len(pids) == 0 {
-						fmt.Printf("Process \"%s\" not found!\n", c.Args().First())
+						fmt.Printf("Process \"%s\" not found\n", c.Args().First())
 						return nil
 					}
 
