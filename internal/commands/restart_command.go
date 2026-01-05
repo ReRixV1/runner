@@ -39,6 +39,9 @@ func (Cmd RestartCommand) getPid(name string) (*int, error) {
 
 // TODO: all flag
 func (Cmd RestartCommand) Run() error {
+	if Cmd.Cmd.Args().Len() < 1 {
+		fmt.Println("Please enter a valid process name")
+	}
 	allFlag := Cmd.Cmd.Bool("all")
 	pidFlag := Cmd.Cmd.Bool("pid")
 	var pid int

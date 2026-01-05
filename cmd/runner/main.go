@@ -86,7 +86,7 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					return commands.RestartCommand{Cmd: c}.Run()
+					return commands.StopCommand{Cmd: c}.Run()
 				},
 			},
 			&cli.Command{

@@ -13,16 +13,16 @@ type StopCommand struct {
 	Cmd *cli.Command
 }
 
-func (S StopCommand) Run() error {
-	services.DeleteStoppedActivites()
-
-	if S.Cmd.Args().Len() < 1 {
-		fmt.Println("Please enter a valid pid!")
+func (Cmd StopCommand) Run() error {
+	if Cmd.Cmd.Args().Len() < 1 {
+		fmt.Println("Please enter a valid process name")
 		return nil
 	}
 
-	if S.Cmd.Bool("pid") == true {
-		pid, err := strconv.Atoi(S.Cmd.Args().First())
+	services.DeleteStoppedActivites()
+
+	if Cmd.Cmd.Bool("pid") == true {
+		pid, err := strconv.Atoi(Cmd.Cmd.Args().First())
 		if err != nil {
 			fmt.Println("Please enter a valid pid!")
 			return nil
@@ -38,8 +38,8 @@ func (S StopCommand) Run() error {
 		return nil
 	}
 
-	name := strings.ToLower(S.Cmd.Args().First())
-	err := services.StopActivityWithName(name, S.Cmd.Bool("all"))
+	name := strings.ToLower(Cmd.Cmd.Args().First())
+	err := services.StopActivityWithName(name, Cmd.Cmd.Bool("all"))
 
 	if err != nil {
 		if err.Error() == "not found" {
