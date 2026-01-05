@@ -50,7 +50,7 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					return commands.ViewCommand{Cmd: c, UseTail: false}.Run()
+					return commands.ViewCommand{Cmd: c, UseTail: true}.Run()
 				},
 			},
 			&cli.Command{
