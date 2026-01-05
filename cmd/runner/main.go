@@ -18,7 +18,7 @@ func main() {
 	cmd := &cli.Command{
 		Name:                  "runner",
 		Usage:                 "Manage commands that run in the background",
-		Version:               "v0.1",
+		Version:               "v1.0",
 		EnableShellCompletion: true,
 		Commands: []*cli.Command{
 			&cli.Command{
