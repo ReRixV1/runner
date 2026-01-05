@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runner/internal/commands"
 	"runner/internal/services"
-	"strconv"
-	"strings"
 
 	"github.com/urfave/cli/v3"
 )
@@ -28,20 +27,8 @@ func main() {
 				Aliases:         []string{"r", "start"},
 				Usage:           "Run command in the background",
 				SkipFlagParsing: true,
-				Action: func(ctx context.Context, cmd *cli.Command) error {
-					if cmd.Args().Len() < 1 {
-						fmt.Println("Must provide a command!")
-						return nil
-					}
-					activity, err := services.StartProcessInBackground(cmd.Args().Slice()...)
-					if err != nil {
-						fmt.Println("Error while executing command")
-						return nil
-					}
-
-					fmt.Printf("Started %s (pid %d) in the background!\n", activity.Command, activity.Pid)
-
-					return nil
+				Action: func(ctx context.Context, c *cli.Command) error {
+					return commands.RunCommand{Cmd: c}.Run()
 				},
 			},
 			&cli.Command{
@@ -49,12 +36,7 @@ func main() {
 				Aliases: []string{"l", "ls"},
 				Usage:   "Lists all running backgrund activities (commands)",
 				Action: func(ctx context.Context, c *cli.Command) error {
-					err := services.ListActivites()
-					if err != nil {
-						fmt.Println("Error listing activities (internal error)")
-						return nil
-					}
-					return nil
+					return commands.ListCommand{Cmd: c}.Run()
 				},
 			},
 			&cli.Command{
@@ -69,7 +51,7 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					return view(c, true)
+					return commands.ViewCommand{Cmd: c, UseTail: false}.Run()
 				},
 			},
 			&cli.Command{
@@ -83,7 +65,7 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					return view(c, false)
+					return commands.ViewCommand{Cmd: c, UseTail: false}.Run()
 				},
 			},
 
@@ -104,44 +86,26 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					services.DeleteStoppedActivites()
-
-					if c.Args().Len() < 1 {
-						fmt.Println("Please enter a valid pid!")
-						return nil
-					}
-
-					if c.Bool("pid") == true {
-						pid, err := strconv.Atoi(c.Args().First())
-						if err != nil {
-							fmt.Println("Please enter a valid pid!")
-							return nil
-						}
-						err = services.StopActivity(pid)
-
-						if err != nil {
-							fmt.Println("pid not found!")
-							return nil
-						}
-
-						fmt.Println("Stopped process " + strconv.Itoa(pid))
-						return nil
-					}
-
-					name := strings.ToLower(c.Args().First())
-					err := services.StopActivityWithName(name, c.Bool("all"))
-
-					if err != nil {
-						if err.Error() == "not found" {
-							return nil
-						}
-						fmt.Println("Error while trying to stop process!")
-						return nil
-					}
-
-					fmt.Println("Stopped process: " + name)
-					return nil
-
+					return commands.RestartCommand{Cmd: c}.Run()
+				},
+			},
+			&cli.Command{
+				Name:  "restart",
+				Usage: "restarts a process",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "pid",
+						Usage:   "restart process using its pid",
+						Aliases: []string{"p"},
+					},
+					&cli.BoolFlag{
+						Name:    "all",
+						Usage:   "restart all process matching name",
+						Aliases: []string{"a"},
+					},
+				},
+				Action: func(ctx context.Context, c *cli.Command) error {
+					return commands.RestartCommand{Cmd: c}.Run()
 				},
 			},
 			&cli.Command{

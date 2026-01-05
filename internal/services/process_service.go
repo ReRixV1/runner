@@ -82,3 +82,7 @@ func stopProcess(path string) error {
 	}
 	return nil
 }
+
+func restartProcess(pid int) error {
+	return nil
+}

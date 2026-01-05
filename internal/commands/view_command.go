@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -9,15 +9,20 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func view(c *cli.Command, useTail bool) error {
+type ViewCommand struct {
+	Cmd     *cli.Command
+	UseTail bool
+}
+
+func (V ViewCommand) Run() error {
 	tmpDir := services.GetTempDirPath()
 	var pid int
-	if c.Args().Len() == 0 {
+	if V.Cmd.Args().Len() == 0 {
 		fmt.Println("Please enter a process name or a PID using --pid")
 		return nil
 	}
-	if c.Bool("pid") {
-		p, err := strconv.Atoi(c.Args().First())
+	if V.Cmd.Bool("pid") {
+		p, err := strconv.Atoi(V.Cmd.Args().First())
 		pid = p
 		if err != nil {
 			fmt.Println("Please enter a valid pid!")
@@ -25,19 +30,19 @@ func view(c *cli.Command, useTail bool) error {
 		}
 	}
 
-	pids, _ := services.GetPids(c.Args().First())
-
+	pids, _ := services.GetPids(V.Cmd.Args().First())
+	name := V.Cmd.Args().First()
 	if len(pids) > 1 {
-		fmt.Printf("More than one process found with name \"%s\"\n", c.Args().First())
+		fmt.Printf("More than one process found with name \"%s\"\n", name)
 		return nil
 	}
 
-	if !c.Bool("pid") && len(pids) == 0 {
-		fmt.Printf("Process \"%s\" not found\n", c.Args().First())
+	if !V.Cmd.Bool("pid") && len(pids) == 0 {
+		fmt.Printf("Process \"%s\" not found\n", name)
 		return nil
 	}
 
-	if !c.Bool("pid") {
+	if !V.Cmd.Bool("pid") {
 		pid = *pids[0]
 	}
 
@@ -50,7 +55,7 @@ func view(c *cli.Command, useTail bool) error {
 
 	logFile := a.LogFile
 	logFilePath := filepath.Join(tmpDir, logFile)
-	if useTail {
+	if V.UseTail {
 		services.ReadLogFileTail(logFilePath)
 		return nil
 	}
