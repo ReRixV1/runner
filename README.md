@@ -9,9 +9,11 @@ Start, stop, list, and inspect running commands in a clean way.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ReRixV1/runner/refs/heads/main/install.sh)"
 ```
 
+Need to have Go and git installed
+
 (or clone & build manually)
 
-Either way you need to have Go and git installed!
+
 
 ## Usage
 
