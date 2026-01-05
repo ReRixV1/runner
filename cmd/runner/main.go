@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"runner/internal/commands"
@@ -108,14 +107,14 @@ func main() {
 					return commands.RestartCommand{Cmd: c}.Run()
 				},
 			},
-			&cli.Command{
-				Name:  "temp",
-				Usage: "prints temp directory path (for development :D)",
-				Action: func(ctx context.Context, c *cli.Command) error {
-					fmt.Println(services.GetTempDirPath())
-					return nil
-				},
-			},
+			//&cli.Command{
+			//	Name:  "temp",
+			//	Usage: "prints temp directory path (for development :D)",
+			//	Action: func(ctx context.Context, c *cli.Command) error {
+			//		fmt.Println(services.GetTempDirPath())
+			//		return nil
+			//	},
+			//},
 		},
 	}
 
