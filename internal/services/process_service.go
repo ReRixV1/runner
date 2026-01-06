@@ -33,6 +33,7 @@ func StartProcessInBackground(commands ...string) (*models.BackgroundActivity, e
 	fout, err := createAndOpenLogFile(logName)
 	if err != nil {
 		fmt.Println("Error opening log file (internal error)")
+		return nil, nil
 	}
 
 	devNull, err := os.OpenFile("/dev/null", os.O_RDONLY, 0)

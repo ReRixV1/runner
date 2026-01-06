@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"runner/internal/commands"
@@ -12,6 +13,7 @@ import (
 
 func main() {
 	if err := services.EnsureTempDirectory(); err != nil {
+		fmt.Println("Couldn't ensure temp directory (internal error)")
 		return
 	}
 
