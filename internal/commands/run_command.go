@@ -18,7 +18,7 @@ func (Cmd RunCommand) Run() error {
 	}
 	activity, err := services.StartProcessInBackground(Cmd.Cmd.Args().Slice()...)
 	if err != nil {
-		fmt.Println("Error while executing command")
+		fmt.Printf("Error while executing command: \n%s\n", err.Error())
 		return nil
 	}
 
