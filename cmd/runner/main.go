@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"runner/internal/commands"
+	"runner/internal/config"
 	"runner/internal/services"
 
 	"github.com/urfave/cli/v3"
@@ -14,6 +15,12 @@ import (
 func main() {
 	if err := services.EnsureTempDirectory(); err != nil {
 		fmt.Println("Couldn't ensure temp directory (internal error)")
+		return
+	}
+
+	err := config.LoadConfig()
+	if err != nil {
+		fmt.Println("Error reading config file (internal error)")
 		return
 	}
 
