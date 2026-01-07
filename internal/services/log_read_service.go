@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
-func ReadLogFileTail(path string) error {
-	cmd := exec.Command("tail", "-n", "20", "-f", path)
+func ReadLogFileTail(path string, lines int) error {
+	cmd := exec.Command("tail", "-n", strconv.Itoa(lines), "-f", path)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
