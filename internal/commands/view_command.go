@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"path/filepath"
+	"runner/internal/config"
 	"runner/internal/services"
 	"strconv"
 
@@ -14,15 +15,19 @@ type ViewCommand struct {
 	UseTail bool
 }
 
-func (V ViewCommand) Run() error {
+func (Cmd ViewCommand) Run() error {
 	tmpDir := services.GetTempDirPath()
+
+	lines := config.Cfg.StartLines
+	lines = max(lines, 0)
+
 	var pid int
-	if V.Cmd.Args().Len() == 0 {
+	if Cmd.Cmd.Args().Len() == 0 {
 		fmt.Println("Please enter a process name or a PID using --pid")
 		return nil
 	}
-	if V.Cmd.Bool("pid") {
-		p, err := strconv.Atoi(V.Cmd.Args().First())
+	if Cmd.Cmd.Bool("pid") {
+		p, err := strconv.Atoi(Cmd.Cmd.Args().First())
 		pid = p
 		if err != nil {
 			fmt.Println("Please enter a valid pid!")
@@ -30,19 +35,19 @@ func (V ViewCommand) Run() error {
 		}
 	}
 
-	pids, _ := services.GetPids(V.Cmd.Args().First())
-	name := V.Cmd.Args().First()
+	pids, _ := services.GetPids(Cmd.Cmd.Args().First())
+	name := Cmd.Cmd.Args().First()
 	if len(pids) > 1 {
 		fmt.Printf("More than one process found with name \"%s\"\n", name)
 		return nil
 	}
 
-	if !V.Cmd.Bool("pid") && len(pids) == 0 {
+	if !Cmd.Cmd.Bool("pid") && len(pids) == 0 {
 		fmt.Printf("Process \"%s\" not found\n", name)
 		return nil
 	}
 
-	if !V.Cmd.Bool("pid") {
+	if !Cmd.Cmd.Bool("pid") {
 		pid = *pids[0]
 	}
 
@@ -55,8 +60,8 @@ func (V ViewCommand) Run() error {
 
 	logFile := a.LogFile
 	logFilePath := filepath.Join(tmpDir, logFile)
-	if V.UseTail {
-		services.ReadLogFileTail(logFilePath)
+	if Cmd.UseTail {
+		services.ReadLogFileTail(logFilePath, lines)
 		return nil
 	}
 
