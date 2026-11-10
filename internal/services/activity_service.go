@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runner/internal/models"
+	"strconv"
 	"strings"
 	"syscall"
 )
@@ -33,6 +35,11 @@ func getRunningActivities() ([]models.BackgroundActivity, error) {
 }
 
 func StopActivity(pid int) error {
+	activity, _ := GetActivity(filepath.Join(GetTempDirPath(), strconv.Itoa(pid)+".json"))
+	if activity != nil && activity.Pid == pid {
+		return syscall.Kill(-pid, syscall.SIGKILL)
+	}
+
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		return err
